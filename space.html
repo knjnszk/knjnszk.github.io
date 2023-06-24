@@ -25,7 +25,7 @@ let centy = 0;
 let star_posx = 100 * (Math.random() - 0.5);
 let star_posy = 100 * (Math.random() - 0.5);
 let tstar = 0;
-let starnum = 1000;
+let starnum = 800;
 var arr = [];
 //create_random_star();
 
@@ -117,8 +117,8 @@ function star_move() {
 		if (arr[5*i]>2000||0>arr[5*i]){
 			arr[5*i] = Math.random() * canvas_width;
 		}
-		erasestar(arr[5*i+2], arr[5*i+3], 3);
-		drawstar(arr[5*i], arr[5*i+1], 1);
+		erasestar(arr[5*i+2], arr[5*i+3], 6);
+		drawstar(arr[5*i], arr[5*i+1], 4);
 	}
 }
 
