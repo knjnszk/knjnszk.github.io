@@ -25,6 +25,7 @@ let centy = 0;
 let star_posx = 100 * (Math.random() - 0.5);
 let star_posy = 100 * (Math.random() - 0.5);
 let tstar = 0;
+let starnum = 1000;
 var arr = [];
 //create_random_star();
 
@@ -47,6 +48,7 @@ function ev_load(event){
 	centy = 500;
 	canvas_width = canvas_ele.width;
 	canvas_height = canvas_ele.height;
+	create_random_star();
 }
 
 function ev_momove(event) {
@@ -78,11 +80,11 @@ function create_random_star() {
 	star_posx = 50 * Math.cos(arg);
 	star_posy = 50 * Math.sin(arg);
 	tstar = tick;
-	for (let i = 0; i < 100; i++) {
+	for (let i = 0; i < starnum; i++) {
 		arr[5 * i] = Math.random() * canvas_width;
 		arr[5 * i + 1] = Math.random() * canvas_height;
-		arr[5 * i + 4] = Math.random() * 0.01;
-		drawstar(arr[5 * i], arr[5 * i + 1], 5);
+		arr[5 * i + 4] = Math.random() * 0.02;
+		drawstar(arr[5 * i], arr[5 * i + 1], 1);
 	}
 	star_move();
 }
@@ -90,7 +92,7 @@ function erasestar(x, y, r) {
 	let canvas_ele = document.getElementById('mycanvas');
 	if (canvas_ele.getContext) {
 		let ctx = canvas_ele.getContext('2d');
-		ctx.fillStyle = 'rgb(d, d, d, 1)';
+		ctx.fillStyle = '#000';
 		ctx.fillRect(-r/2 + x, -r/2 + y, r, r);
 	}
 }
@@ -98,36 +100,26 @@ function drawstar(x, y, r) {
 	let canvas_ele = document.getElementById('mycanvas');
 	if (canvas_ele.getContext) {
 		let ctx = canvas_ele.getContext('2d');
-		ctx.fillStyle = 'rgb(fff, fff, fff, 1)';
+		ctx.fillStyle = '#fff';
 		ctx.fillRect(-r/2 + x, -r/2 + y, r, r);
 	}
 }
 function star_move() {
-for (let i = 0; i < 100; i++) {
-	arr[5*i+2]=arr[5*i];
-	arr[5*i+3]=arr[5*i+1];
+	for (let i = 0; i < starnum; i++) {
+		arr[5*i+2]=arr[5*i];
+		arr[5*i+3]=arr[5*i+1];
 
-	arr[5*i] += arr[5*i+4]*(arr[5*i]-mox);
-	arr[5*i+1] += arr[5*i+4]*(arr[5*i+1]-moy);
-	erasestar(arr[5*i+2], arr[5*i+3], 9);
-	drawstar(arr[5 * i], arr[5 * i + 1], 7);
-}
-/*
-	let localt = tick - tstar;
-	let x = Math.exp(0.1*localt) * star_posx/100 + mox;
-	let y = Math.exp(0.1*localt) * star_posy/100 + moy;
-	clear();
-	let radius = 10;//localt;
-	let canvas_ele = document.getElementById('mycanvas');
-	if (canvas_ele.getContext) {
-		let ctx = canvas_ele.getContext('2d');
-		ctx.fillStyle = 'rgb(fff, fff, fff, 1)';
-		ctx.fillRect(x - radius/2, y - radius/2, radius, radius);
+		arr[5*i] += arr[5*i+4]*(arr[5*i]-mox);
+		arr[5*i+1] += arr[5*i+4]*(arr[5*i+1]-moy);
+		if (arr[5*i+1]>1000||0>arr[5*i+1]){
+			arr[5 * i + 1] = Math.random() * canvas_height;
+		}
+		if (arr[5*i]>2000||0>arr[5*i]){
+			arr[5*i] = Math.random() * canvas_width;
+		}
+		erasestar(arr[5*i+2], arr[5*i+3], 3);
+		drawstar(arr[5*i], arr[5*i+1], 1);
 	}
-	if (localt > 100) {
-		create_random_star();
-	}
-*/
 }
 
 function ev_push_keydown(event){
@@ -149,10 +141,8 @@ function draw(x, y) {
 	if (canvas_ele.getContext) {
 		let ctx = canvas_ele.getContext('2d');
 		ctx.fillStyle = 'rgb(200, 0, 0, 1)';
-		ctx.fillRect(x-5, y-5, 10, 10);
+//		ctx.fillRect(x-5, y-5, 10, 10);
 
-		ctx.fillStyle = 'rgb(200, 200, 200, 2)';
-		ctx.fillRect(100 * Math.sin(6.2*tick)-5 + mox, 100* Math.cos(6.2*tick)-5 + moy, 10, 10);
 	}
 }
 </script>
