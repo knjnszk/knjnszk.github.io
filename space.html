@@ -2,9 +2,9 @@
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>たのしいあそびば </title>
+<title>Space</title>
 <style>
-canvas {background: #010101}
+canvas {background: #000}
 body {background: #777}
 </style>
 <script>
@@ -12,16 +12,17 @@ body {background: #777}
 let tick = 0;
 const framerate = 60;
 
-window.addEventListener("keydown", ev_push_keydown);
 window.addEventListener("click", ev_click);
 window.addEventListener("touchstart", ev_click);
 window.addEventListener("mousemove", ev_momove);
+window.addEventListener("keydown", ev_push_keydown);
+
 let mox = 700;
 let moy = 300;
+let current_string = "";
+
 let centx = 500;
 let centy = 500;
-let current_string = "Welcome to the world!";
-
 function ev_momove(event) {
 	document.getElementById("object").innerHTML = current_string;
 	let canvas_ele = document.getElementById('mycanvas');
@@ -30,7 +31,6 @@ function ev_momove(event) {
 	moy = event.clientY - canvas_pos.top;
 	current_string = "Mouse coordinate = (" + mox + ", " + moy + ")";
 	draw(mox,moy);
-	document.getElementById("my-clock").innerHTML = "t = " + tick + "<br>";
 }
 
 window.setInterval(my_clock, 1000/framerate);
@@ -41,7 +41,6 @@ function my_clock() {
 }
 
 
-
 function ev_click(event) {
 	current_string = "clicked!";
 	document.getElementById("object").innerHTML = current_string;
@@ -49,20 +48,33 @@ function ev_click(event) {
 	centy = moy;
 }
 
+function create_random_star() {
+	star_posx = 100 * Math.random();
+	star_posx = 100 * Math.random();
+}
+
 function ev_push_keydown(event){
-	current_string += event.key;
+//	current_string += event.key;
+	current_string = "Something Typed!";
 	document.getElementById("object").innerHTML = current_string;
+	clear();
+}
+function clear() {
+	let canvas_ele = document.getElementById('mycanvas');
+	if (canvas_ele.getContext) {
+		let ctx = canvas_ele.getContext('2d');
+		ctx.clearRect(0, 0, canvas_ele.width, canvas_ele.height);
+	}
 }
 function draw(x, y) {
 	let canvas_ele = document.getElementById('mycanvas');
 	if (canvas_ele.getContext) {
 		let ctx = canvas_ele.getContext('2d');
-		ctx.clearRect(0, 0, canvas_ele.width, canvas_ele.height);
-		ctx.fillStyle = 'rgb(200, 0, 0)';
+		ctx.fillStyle = 'rgb(200, 0, 0, 0.2)';
 		ctx.fillRect(x-10, y-10, 10, 10);
 
-		ctx.fillStyle = 'rgb(0, 0, 200, 0.5)';
-		ctx.fillRect(100 * Math.sin(6.2*tick) + mox, 100* Math.cos(6.2*tick) + moy, 50, 50);
+		ctx.fillStyle = 'rgb(200, 200, 200, 0.2)';
+		ctx.fillRect(100 * Math.sin(6.2*tick)-5 + mox, 100* Math.cos(6.2*tick)-5 + moy, 10, 10);
 	}
 }
 </script>
@@ -70,9 +82,8 @@ function draw(x, y) {
 <body>
 <center>
 <canvas id="mycanvas" width="1500" height="700"></canvas>
-<h1 id="object" class="text">Welcome to SPAAAAAAAAAAAAAACE!</h1>
-<h2 id="my-clock">t = 0</h2>
-<h2 id="my-time">t = 0</h2>
+<h2 id="my-time">Click Anywhere</h2>
+<h1 id="object" class="text"></h1>
 </center>
 </body>
 </html>
