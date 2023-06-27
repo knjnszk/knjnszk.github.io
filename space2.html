@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Space</title>
+<style>
+canvas {background: #000}
+body {background: #777}
+</style>
+<script>
+function Point(x, y){
+	this.x = x;
+	this.y = y;
+}
+function Star(pos, prev, v){
+	this.pos = pos;
+	this.prev = prev;
+	this.v = v;
+}
+
+let tick = 0;
+const framerate = 60;
+let canvas_pos = new Point(0,0);
+let canvas_size = new Point(0,0);
+let mo = new Point(0,0);
+let cent = new Point(0,0);
+let current_string = "";
+
+let starnum = 800;
+var star = [];
+
+window.addEventListener("load", ev_load);
+window.addEventListener("click", ev_click);
+window.addEventListener("touchstart", ev_click);
+window.addEventListener("mousemove", ev_momove);
+window.addEventListener("keydown", ev_push_keydown);
+
+function ev_load(event){
+	document.getElementById("object").innerHTML = current_string;
+	let canvas_ele = document.getElementById('mycanvas');
+	let canvas_position = canvas_ele.getBoundingClientRect();
+	canvas_pos.x = canvas_position.left;
+	canvas_pos.y = canvas_position.top;
+	mo.x = 700;
+	mo.y = 300;
+	cent.x = 500;
+	cent.y = 700;
+	current_string = "";
+	canvas_size.x = canvas_ele.width;
+	canvas_size.y = canvas_ele.height;
+	create_random_star();
+}
+
+function ev_momove(event) {
+	document.getElementById("object").innerHTML = current_string;
+	mo.x = event.clientX - canvas_pos.x;
+	mo.y = event.clientY - canvas_pos.y;
+	current_string = "Mouse coordinate = (" + mo.x + ", " + mo.y + ")<br>Canvas size = (" + canvas_pos.x + ", " + canvas_pos.y + ")";
+	draw(mo);
+}
+
+window.setInterval(my_clock, 1000/framerate);
+
+function my_clock() {
+	tick++;
+	document.getElementById("my-time").innerHTML = "t = " + tick + "<br>";
+	star_move();
+	draw(mo);
+}
+
+function ev_click(event) {
+	current_string = "clicked!";
+	document.getElementById("object").innerHTML = current_string;
+	cent = mo;
+	clear();
+}
+
+function create_random_star() {
+	for (let i = 0; i < starnum; i++) {
+		let star_pos = new Point(Math.random() * canvas_size.x, Math.random() * canvas_size.y);
+		let prev_pos = new Point(0,0);
+		let v = Math.random() * 0.02;
+		let newstar = new Star(star_pos, prev_pos, v);
+		star[i] = newstar;
+		//drawstar(star[i].pos.x, star[i].pos.y, 4);
+	}
+	star_move();
+}
+function erasestar(x, y, r) {
+	let canvas_ele = document.getElementById('mycanvas');
+	if (canvas_ele.getContext) {
+		let ctx = canvas_ele.getContext('2d');
+		ctx.fillStyle = '#000';
+		ctx.fillRect(-r/2 + x, -r/2 + y, r, r);
+	}
+}
+function drawstar(x, y, r) {
+	let canvas_ele = document.getElementById('mycanvas');
+	if (canvas_ele.getContext) {
+		let ctx = canvas_ele.getContext('2d');
+		ctx.fillStyle = '#fff';
+		ctx.fillRect(-r/2 + x, -r/2 + y, r, r);
+	}
+}
+function star_move() {
+	for (let i = 0; i < starnum; i++) {
+		star[i].prev.x = star[i].pos.x;
+		star[i].prev.y = star[i].pos.y;
+
+		star[i].pos.x += star[i].v * (star[i].pos.x - mo.x);
+		star[i].pos.y += star[i].v * (star[i].pos.y - mo.y);
+		if (star[i].pos.y>canvas_size.y||0>star[i].pos.y){
+			star[i].pos.y = Math.random() * canvas_size.y;
+		} else if (star[i].pos.x>canvas_size.x||0>star[i].pos.x){
+			star[i].pos.x = Math.random() * canvas_size.x;
+		}
+		let sizeofstar = 1;
+		erasestar(star[i].prev.x, star[i].prev.y, sizeofstar+2);
+		drawstar(star[i].pos.x, star[i].pos.y, sizeofstar);
+	}
+}
+
+function ev_push_keydown(event){
+//	current_string += event.key;
+	current_string = "Something Typed!";
+	document.getElementById("object").innerHTML = current_string;
+	clear();
+	create_random_star();
+}
+function clear() {
+	let canvas_ele = document.getElementById('mycanvas');
+	if (canvas_ele.getContext) {
+		let ctx = canvas_ele.getContext('2d');
+		ctx.clearRect(0, 0, canvas_size.x, canvas_size.y);
+	}
+}
+function draw(pos) {
+	let canvas_ele = document.getElementById('mycanvas');
+	if (canvas_ele.getContext) {
+		let ctx = canvas_ele.getContext('2d');
+		ctx.fillStyle = 'rgb(200, 0, 0, 1)';
+		ctx.fillRect(pos.x-5, pos.y-5, 10, 10);
+	}
+}
+</script>
+</head>
+<body>
+<center>
+<canvas id="mycanvas" width="1500" height="700"></canvas>
+<h2 id="my-time">Click Anywhere</h2>
+<h1 id="object" class="text"></h1>
+</center>
+</body>
+</html>
+
+
+
+
+
+
+
+
+

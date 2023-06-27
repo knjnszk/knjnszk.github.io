@@ -27,6 +27,7 @@ let star_posy = 100 * (Math.random() - 0.5);
 let tstar = 0;
 let starnum = 800;
 var arr = [];
+
 //create_random_star();
 
 window.addEventListener("load", ev_load);
@@ -76,17 +77,28 @@ function ev_click(event) {
 }
 
 function create_random_star() {
+	tstar = tick;
+	for (let i = 0; i < starnum; i++) {
+	let posx = Math.random() * canvas_width;
+	let posy = Math.random() * canvas_height;
+	let star_pos = new Point(posx, posy);
+		arr[5 * i] = star_pos;
+		arr[5 * i + 4] = Math.random() * 0.02;
+		drawstar(arr[5 * i].x, arr[5 * i].y, 1);
+	}
+	star_move();
+}
+function create_random_star2() {
 	let arg = Math.random() * 6.28;
 	star_posx = 50 * Math.cos(arg);
 	star_posy = 50 * Math.sin(arg);
 	tstar = tick;
 	for (let i = 0; i < starnum; i++) {
-		arr[5 * i] = Math.random() * canvas_width;
-		arr[5 * i + 1] = Math.random() * canvas_height;
+		arr[i] = new star(Math.random() * canvas_width, Math.random() * canvas_height);
 		arr[5 * i + 4] = Math.random() * 0.02;
-		drawstar(arr[5 * i], arr[5 * i + 1], 1);
+		drawstar(arr[5 * i].x, arr[5 * i].y, 1);
 	}
-	star_move();
+	star_move2();
 }
 function erasestar(x, y, r) {
 	let canvas_ele = document.getElementById('mycanvas');
@@ -104,10 +116,16 @@ function drawstar(x, y, r) {
 		ctx.fillRect(-r/2 + x, -r/2 + y, r, r);
 	}
 }
-function star_move() {
-	for (let i = 0; i < starnum; i++) {
-		arr[5*i+2]=arr[5*i];
-		arr[5*i+3]=arr[5*i+1];
+function Star(x, y, prex, prey, v){
+}
+function Point(x, y){
+	this.x = x;
+	this.y = y;
+}
+function star_move2() {
+		for (let i = 0; i < starnum; i++) {
+		arr[5*i+2]=arr[5*i].x;
+		arr[5*i+3]=arr[5*i].y;
 
 		arr[5*i] += arr[5*i+4]*(arr[5*i]-mox);
 		arr[5*i+1] += arr[5*i+4]*(arr[5*i+1]-moy);
@@ -119,6 +137,24 @@ function star_move() {
 		}
 		erasestar(arr[5*i+2], arr[5*i+3], 6);
 		drawstar(arr[5*i], arr[5*i+1], 4);
+	}
+}
+
+function star_move() {
+	for (let i = 0; i < starnum; i++) {
+		arr[5*i+2]=arr[5*i].x;
+		arr[5*i+3]=arr[5*i].y;
+
+		arr[5*i].x += arr[5*i+4]*(arr[5*i].x-mox);
+		arr[5*i].y += arr[5*i+4]*(arr[5*i].y-moy);
+		if (arr[5*i].y>1000||0>arr[5*i].y){
+			arr[5 * i].y = Math.random() * canvas_height;
+		}
+		if (arr[5*i].x>2000||0>arr[5*i].x){
+			arr[5*i].x = Math.random() * canvas_width;
+		}
+		erasestar(arr[5*i+2], arr[5*i+3], 6);
+		drawstar(arr[5*i].x, arr[5*i].y, 4);
 	}
 }
 
