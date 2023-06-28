@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>Space</title>
+<title>Ball</title>
 <style>
 canvas {background: #000}
 body {background: #777}
@@ -23,11 +23,11 @@ const framerate = 60;
 let canvas_pos = new Point(0,0);
 let canvas_size = new Point(0,0);
 let mo = new Point(0,0);
-let cent = new Point(0,0);
 let current_string = "";
+let prevmo = new Point(0,0);
+let ab = new Point(0,0);
+let prevab = new Point(0,0);
 
-let starnum = 800;
-let star = [];
 
 window.addEventListener("load", ev_load);
 window.addEventListener("click", ev_click);
@@ -41,90 +41,63 @@ function ev_load(event){
 	document.getElementById("object").innerHTML = current_string;
 	let canvas_ele = document.getElementById('mycanvas');
 	let canvas_position = canvas_ele.getBoundingClientRect();
+	let ctx = canvas_ele.getContext('2d');
+	ctx.fillStyle = '#222';
+	ctx.fillRect(0,0, 410, 410);
+
 	canvas_pos.x = canvas_position.left;
 	canvas_pos.y = canvas_position.top;
-	mo.x = 700;
-	mo.y = 300;
-	cent.x = 500;
-	cent.y = 700;
 	current_string = "";
 	canvas_size.x = canvas_ele.width;
 	canvas_size.y = canvas_ele.height;
 	create_random_star();
+
+	mo.x = 700;
+	mo.y = 300;
+	prevmo.x = mo.x;
+	prevmo.y = mo.y;
 }
+
 function ev_momove(event) {
 	document.getElementById("object").innerHTML = current_string;
 	mo.x = event.clientX - canvas_pos.x;
 	mo.y = event.clientY - canvas_pos.y;
-	current_string = "Mouse coordinate = (" + mo.x + ", " + mo.y + ")<br>Canvas size = (" + canvas_pos.x + ", " + canvas_pos.y + ")";
-	draw(mo);
+	current_string = "Mouse coordinate = (" + mo.x + ", " + mo.y + ")";
+	erase(prevmo,10);
+	draw(mo,10);
+	prevmo.x = mo.x;
+	prevmo.y = mo.y;
+	let scale = 200;
+	clear();
+	for (let j = 0; j < 100; j++) {
+		for (let i = 0; i < 100; i++) {
+			ab.x = Math.cos((mo.y + 100 * j)/100) * scale * Math.sin((mo.x + 100 * i)/100) + scale;
+			ab.y = scale * Math.sin((100 * j + mo.y)/100) + scale;
+//			erase(prevab, 5);
+			draw(ab, 5);
+			prevab.x = ab.x;
+			prevab.y = ab.y;
+		}
+	}
 }
 
 function my_clock() {
 	tick++;
 	document.getElementById("my-time").innerHTML = "t = " + tick + "<br>";
-	star_move();
-	draw(mo);
+	draw(mo, 10);
 }
 
 function ev_click(event) {
 	current_string = "clicked!";
 	document.getElementById("object").innerHTML = current_string;
-	cent = mo;
 	clear();
-}
-
-function create_random_star() {
-	for (let i = 0; i < starnum; i++) {
-		let star_pos = new Point(Math.random() * canvas_size.x, Math.random() * canvas_size.y);
-		let prev_pos = new Point(0,0);
-		let v = Math.random() * 0.02;
-		let newstar = new Star(star_pos, prev_pos, v);
-		star[i] = newstar;
-		//drawstar(star[i].pos.x, star[i].pos.y, 4);
-	}
-	star_move();
-}
-function erasestar(x, y, r) {
-	let canvas_ele = document.getElementById('mycanvas');
-	if (canvas_ele.getContext) {
-		let ctx = canvas_ele.getContext('2d');
-		ctx.fillStyle = '#000';
-		ctx.fillRect(-r/2 + x, -r/2 + y, r, r);
-	}
-}
-function drawstar(x, y, r) {
-	let canvas_ele = document.getElementById('mycanvas');
-	if (canvas_ele.getContext) {
-		let ctx = canvas_ele.getContext('2d');
-		ctx.fillStyle = '#fff';
-		ctx.fillRect(-r/2 + x, -r/2 + y, r, r);
-	}
-}
-function star_move() {
-	for (let i = 0; i < starnum; i++) {
-		star[i].prev.x = star[i].pos.x;
-		star[i].prev.y = star[i].pos.y;
-
-		star[i].pos.x += star[i].v * (star[i].pos.x - mo.x);
-		star[i].pos.y += star[i].v * (star[i].pos.y - mo.y);
-		if (star[i].pos.y>canvas_size.y||0>star[i].pos.y){
-			star[i].pos.y = Math.random() * canvas_size.y;
-		} else if (star[i].pos.x>canvas_size.x||0>star[i].pos.x){
-			star[i].pos.x = Math.random() * canvas_size.x;
-		}
-		let sizeofstar = 3;
-		erasestar(star[i].prev.x, star[i].prev.y, sizeofstar+2);
-		drawstar(star[i].pos.x, star[i].pos.y, sizeofstar);
-	}
 }
 
 function ev_push_keydown(event){
-//	current_string += event.key;
+	current_string += event.key;
 	current_string = "Something Typed!";
 	document.getElementById("object").innerHTML = current_string;
-	clear();
-	create_random_star();
+//	clear();
 }
 function clear() {
 	let canvas_ele = document.getElementById('mycanvas');
@@ -133,12 +106,21 @@ function clear() {
 		ctx.clearRect(0, 0, canvas_size.x, canvas_size.y);
 	}
 }
-function draw(pos) {
+function draw(pos, size) {
 	let canvas_ele = document.getElementById('mycanvas');
 	if (canvas_ele.getContext) {
 		let ctx = canvas_ele.getContext('2d');
 		ctx.fillStyle = 'rgb(200, 0, 0, 1)';
-		ctx.fillRect(pos.x-5, pos.y-5, 10, 10);
+		ctx.fillRect(pos.x-size/2, pos.y-size/2, size, size);
+	}
+}
+function erase(pos, size) {
+	let newsize = size + 2;
+	let canvas_ele = document.getElementById('mycanvas');
+	if (canvas_ele.getContext) {
+		let ctx = canvas_ele.getContext('2d');
+		ctx.fillStyle = '#222';
+		ctx.fillRect(pos.x-newsize/2, pos.y-newsize/2, newsize, newsize);
 	}
 }
 </script>
