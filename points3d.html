@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>Ball</title>
+<title>3D</title>
 <style>
 canvas {background: #000}
 body {background: #777}
@@ -12,17 +12,31 @@ function Point(x, y){
 	this.x = x;
 	this.y = y;
 }
+function PointMov(now, prev) {
+	this.n = now;
+	this.p = prev;
+}
+function Point3d(x, y, z) {
+	this.x = x;
+	this.y = y;
+	this.z = z;
+}
+
+function addvec3d(v1, v2) {
+	let a = new Point3d(v1.x + v2.y, v1.y + v2.y, v1.z + v2.z);
+	return a;
+}
 
 let tick = 0;
 const framerate = 60;
 let canvas_pos = new Point(0,0);
 let canvas_size = new Point(0,0);
-let mo = new Point(0,0);
-let current_string = "";
+let monow = new Point(0,0);
 let prevmo = new Point(0,0);
-let ab = new Point(0,0);
-let prevab = new Point(0,0);
-
+let mo = new PointMov(monow,prevmo);
+let current_string = "";
+let points = [];
+let ptnum = 100;
 
 window.addEventListener("load", ev_load);
 window.addEventListener("click", ev_click);
@@ -36,50 +50,70 @@ function ev_load(event){
 	document.getElementById("object").innerHTML = current_string;
 	let canvas_ele = document.getElementById('mycanvas');
 	let canvas_position = canvas_ele.getBoundingClientRect();
-	let ctx = canvas_ele.getContext('2d');
-	ctx.fillStyle = '#222';
-	ctx.fillRect(0,0, 410, 410);
 
 	canvas_pos.x = canvas_position.left;
 	canvas_pos.y = canvas_position.top;
 	current_string = "";
 	canvas_size.x = canvas_ele.width;
 	canvas_size.y = canvas_ele.height;
-	create_random_star();
 
-	mo.x = 700;
-	mo.y = 300;
-	prevmo.x = mo.x;
-	prevmo.y = mo.y;
+	mo.n.x = 700;
+	mo.n.y = 300;
+	mo.p.x = mo.n.x;
+	mo.p.y = mo.n.y;
+	pointsgen();
+	pointsmov();
+}
+
+function pointsgen() {
+	for (let i = 0; i < ptnum; i++) {
+		let x = (Math.random()+1) * 300;
+		let y = (Math.random()+1) * 300;
+		let z = (Math.random()+1) * 300;
+		points[i] = new Point3d(x,y,z);
+	}
+}
+
+function pxs(i) {
+	let a = new Point(0,0);
+	a.x = points[i].x;
+	a.y = points[i].y;
+	return a;
+}
+
+function pointsmov() {
+	for (let i = 0; i < ptnum; i++) {
+		let a = new Point(0,0);
+		draw(pxs(i), 3);
+	}
+}
+
+function to2d(x,y,z) {
+	let result = new Point(0,0);
+	return result;
 }
 
 function ev_momove(event) {
 	document.getElementById("object").innerHTML = current_string;
-	mo.x = event.clientX - canvas_pos.x;
-	mo.y = event.clientY - canvas_pos.y;
-	current_string = "Mouse coordinate = (" + mo.x + ", " + mo.y + ")";
-	erase(prevmo,10);
-	draw(mo,10);
-	prevmo.x = mo.x;
-	prevmo.y = mo.y;
-	let scale = 200;
-	clear();
-	for (let j = 0; j < 100; j++) {
-		for (let i = 0; i < 100; i++) {
-			ab.x = Math.cos((mo.y + 100 * j)/100) * scale * Math.sin((mo.x + 100 * i)/100) + scale;
-			ab.y = scale * Math.sin((100 * j + mo.y)/100) + scale;
-//			erase(prevab, 5);
-			draw(ab, 5);
-			prevab.x = ab.x;
-			prevab.y = ab.y;
-		}
-	}
+	mo.n.x = event.clientX - canvas_pos.x;
+	mo.n.y = event.clientY - canvas_pos.y;
+	current_string = "Mouse coordinate = (" + mo.n.x + ", " + mo.n.y + ")";
+	let a = new Point3d(1,1,1);
+	let b = new Point3d(2,2,2);
+	let c = addvec3d(a,b);
+	current_string = current_string + c.x + ", " + c.y + ", " + c.z;
+	erase(mo.p,10);
+	draw(mo.n,10);
+	mo.p.x = mo.n.x;
+	mo.p.y = mo.n.y;
+	pointsmov();
 }
 
 function my_clock() {
 	tick++;
 	document.getElementById("my-time").innerHTML = "t = " + tick + "<br>";
-	draw(mo, 10);
+	draw(mo.n, 10);
+	pointsmov();
 }
 
 function ev_click(event) {
@@ -92,7 +126,8 @@ function ev_push_keydown(event){
 	current_string += event.key;
 	current_string = "Something Typed!";
 	document.getElementById("object").innerHTML = current_string;
-//	clear();
+	pointsgen();
+	clear();
 }
 function clear() {
 	let canvas_ele = document.getElementById('mycanvas');
@@ -114,7 +149,7 @@ function erase(pos, size) {
 	let canvas_ele = document.getElementById('mycanvas');
 	if (canvas_ele.getContext) {
 		let ctx = canvas_ele.getContext('2d');
-		ctx.fillStyle = '#222';
+		ctx.fillStyle = '#000';
 		ctx.fillRect(pos.x-newsize/2, pos.y-newsize/2, newsize, newsize);
 	}
 }
