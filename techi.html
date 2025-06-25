@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Techipotchi</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+    }
+    #weightDisplay {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 60px;
+      background: rgba(256,256,256,0.7);
+      padding: 5px 10px;
+      border-radius: 5px;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="weightDisplay">タップしてえさをあげよう<br>体重: 5 kg</div>
+
+  <script>
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let width = canvas.width = window.innerWidth;
+    let height = canvas.height = window.innerHeight;
+
+    let scale = 1;
+    scaleUnit = 5;
+    let tick = 0;
+    let ended = false;
+
+    // 顔文字初期状態
+    let face = "(｡･ω･｡ )";
+    let pos = { x: width * 0.5, y: height * 0.5 };
+    let target = { x: 100, y: 100 };
+    let moving = false;
+    let speed = 2;
+    let weight = 1.0;
+
+    const weightmax = 2000000 / (scaleUnit ** 8);
+
+    // じめん
+    const earthSize = 1000000;
+    let earth = generateEarth();
+    let isNaoVisible = false || true;
+
+    function generateEarth() {
+      const radius = earthSize / (scaleUnit ** scale);
+      return {
+        x: 0.5 * width,
+        y: height + radius - 200,
+        r: radius,
+        color: "#2a7"
+      };
+    }
+
+    function drawCircle(circle) {
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, circle.r, 0, Math.PI * 2);
+      ctx.fillStyle = circle.color;
+      ctx.fill();
+      ctx.closePath();
+
+      ctx.beginPath();
+      ctx.rect(circle.x, circle.y - (circle.r * 1.001), circle.r / 1000, circle.r / 1000);
+      ctx.fillStyle = "#f52";
+      ctx.fill();
+      ctx.closePath();
+    }
+
+    function drawBackground() {
+      ctx.fillStyle = "#126";
+      ctx.rect(0, 0, width, height);
+      ctx.fill();
+      drawCircle(earth);
+    }
+
+    function drawFace() {
+      let fontSize = weight * 30; // 10kg あたり30px
+      ctx.font = `${fontSize}px monospaced`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#ff0";
+      ctx.fillText(face, pos.x, pos.y);
+      if (isNaoVisible) { drawNao();}
+    }
+
+   function drawNao() {
+      let fontSize = weight * 30; // 10kg あたり30px
+      ctx.font = `${fontSize}px monospaced`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#fff";
+      naoPos = naoPosition(pos.x, pos.y);
+      ctx.fillText("(￣_ゝ￣) ﾃﾁﾎﾟｰ", naoPos.x, naoPos.y);
+    }
+    function naoPosition(x, y) {
+      const r = (10 - scale) * 5 * weight;
+      const newX = x + r * Math.floor(r * Math.sin(8 * tick / 100));
+      const newY = y + r * Math.floor(r * Math.cos(8 * tick / 100)) + 50;
+      return {x : newX, y : newY};
+    }
+
+    function update() {
+      tick = tick + 1;
+      if (tick > 200 * Math.PI) { tick = 0; }
+      drawBackground();
+
+      if (moving) {
+        let dx = target.x - pos.x;
+        let dy = target.y - pos.y;
+        let dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < speed) {
+          pos.x = target.x;
+          pos.y = target.y;
+          moving = false;
+        } else {
+          pos.x += (dx / dist) * speed;
+          pos.y += (dy / dist) * speed;
+        }
+        if (ended) {
+          face = dx < 0 ? "(｡･ω･｡ )おしまい" : "( ｡･ω･｡)おしまい";
+        } else {
+          face = dx < 0 ? "(｡･ω･｡ )" : "( ｡･ω･｡)";
+        }
+      }
+
+      if (weight > scaleUnit)
+{
+        scale = scale + 1;
+        weight = weight / scaleUnit;
+        earth = generateEarth();
+
+        radius_old = earthSize / (scaleUnit ** (scale - 1));
+        radius_new = earthSize / (scaleUnit ** scale);
+
+        pos.y = (pos.y - height - radius_old + 200)/ scaleUnit + height + radius_new - 200;
+        pos.x = (pos.x - 0.5 * width) / scaleUnit + 0.5 * width;
+        target = {x : pos.x, y : pos.y};
+        if (scale > 5) { isNaoVisible = true;}
+      }
+      if (scale > 8) {
+        ended = true;
+      }
+      drawFace();
+      requestAnimationFrame(update);
+    }
+    function updateWeightDisplay() {
+      if (ended) { return; } else {
+        document.getElementById("weightDisplay").innerText = `タップしてえさをあげよう\n体重: ${(scaleUnit **scale * weight).toFixed(1)} kg`;
+      }
+    }
+
+    function gainWeight(currentWeight) {
+      result = currentWeight * 1.1;
+      if (ended || result > 2000000 / 5**8) {
+        return weightmax;
+      } else {
+        return result;
+      }
+    }
+
+    canvas.addEventListener("click", e => {
+      const rect = canvas.getBoundingClientRect();
+      target = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      };
+      moving = true;
+      if (!ended) {
+        weight = gainWeight(weight);
+      }
+      updateWeightDisplay();
+    });
+
+    window.addEventListener("resize", () => {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    });
+
+    update();
+  </script>
+</body>
+</html>
